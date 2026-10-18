@@ -35,13 +35,15 @@ reference:
 ```
 Nexon_gazuaaaa/
 ├── data/
-│   ├── raw/data_collection_3/   # 원본 JSON 132개 (git 제외)
-│   └── processed/               # 전처리 결과 (git 제외)
+│   ├── data_collection_3/       # 원본 JSON 132개
+│   └── processed/               # 전처리·군집·평가 결과 (git 제외)
 ├── src/
 │   ├── config.py                # 경로, 게임 사양, 라벨 매핑 등 상수
 │   ├── loader.py                # JSON 로드, 스키마 검증, 사격 구간 추출
 │   ├── features.py              # 궤적 -> 행동 특징 16개
-│   └── preprocess.py            # 파이프라인 실행 + 품질 리포트
+│   ├── preprocess.py            # 파이프라인 실행 + 품질 리포트
+│   ├── clustering.py            # K-Medoids 군집 (라벨 미사용) + 의심 집단 판정
+│   └── evaluate.py              # 라벨 조인 후 H1(샷)/H2(경기) 평가
 └── requirements.txt
 ```
 
@@ -51,10 +53,12 @@ Nexon_gazuaaaa/
    ```bash
    pip install -r requirements.txt
    ```
-2. 데이터 준비: [Zenodo](https://doi.org/10.5281/zenodo.6345323)에서 받은 `data_collection_3`의 JSON 파일을 `data/raw/data_collection_3/`에 넣는다.
-3. 전처리
+2. 데이터: `data/data_collection_3/`에 포함되어 있음 (출처: [Zenodo](https://doi.org/10.5281/zenodo.6345323))
+3. 파이프라인 실행
    ```bash
-   python -m src.preprocess
+   python -m src.preprocess   # JSON -> games/shots parquet
+   python -m src.clustering   # K-Medoids 군집, 의심 집단 판정
+   python -m src.evaluate     # 라벨 조인 후 평가 지표 산출
    ```
 
 ## 전처리 결과
@@ -69,3 +73,22 @@ Nexon_gazuaaaa/
 - 궤적 창: 사격 전 0.5초(17프레임) + 사격 후 0.25초(8프레임)
 - 라벨은 `games`에만 두고 `shots`에는 넣지 않는다. 군집은 `shots`만으로 학습하고, 평가할 때 `game_id`로 조인한다.
 - 메인 분석 구간: episode2~5 (라벨이 무작위 순서로 배정, 라벨별 22경기씩 88경기 / 15,084샷). episode0(정상 10분), episode1(light 10분)은 순서가 고정돼 있어 보조 기준선으로만 사용한다.
+
+## 군집과 평가
+
+**군집 (`clustering.py`, 라벨 미사용)**
+- 메인 구간 샷의 특징 16개를 RobustScaler로 맞춘 뒤 특징별 가중치를 곱한다. 가중치는 `config.py`의 `FEATURE_WEIGHTS`에 근거와 함께 사전 고정했다 (pitch 연속성·방향 전환 3.0, 멈춤 비율 2.0, yaw·속도·명중 0.5 등).
+- 샘플 5,000개로 FasterPAM K-Medoids를 돌리고, K는 2~8 중 실루엣 점수로 선택한 뒤 전체 샷을 가장 가까운 medoid에 할당한다.
+- **의심 집단 판정**: episode0(정상 10분 고정 판)을 "평소 행동" 기준선으로 두고, 학습에는 넣지 않고 할당만 한다. 메인 구간 비중 대비 기준선 비중이 0.5배 미만인 클러스터를 의심 집단으로 본다.
+
+**평가 (`evaluate.py`, 라벨은 여기서 처음 조인)**
+- H1 샷 단위: 의심 클러스터 소속을 치팅 예측으로 보고 precision/recall/F1, 봇 유형별 탐지율, ARI/NMI, 라벨 다수결 매핑 상한선을 계산한다.
+- H2 경기 단위: 경기별 의심 샷 비율. 임계값은 기준선 경기 분포의 95% 분위수(라벨 미사용).
+- 실제 치터 비율 시나리오: 같은 TPR/FPR에서 치터 비율 1~50%일 때 precision.
+
+| 결과 파일 | 내용 |
+|---|---|
+| `clusters.parquet` | 샷별 클러스터, medoid까지 거리, 의심 여부 |
+| `cluster_model.json` | K, 가중치, medoid 샷, 클러스터별 기준선 비중, K 탐색 결과 |
+| `metrics.json` | H1/H2 지표, 봇 유형별 결과, ROC, 치터 비율별 precision |
+| `game_scores.parquet` | 경기별 의심 샷 비율, 판정, 검토 우선순위 |

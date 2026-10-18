@@ -34,3 +34,25 @@ PER_FRAME_KEYS = ["actions", "damages", "ammos", "weapons", "frags", "deaths"]
 
 YAW_COLS = [f"yaw_{i:02d}" for i in range(WINDOW)]
 PITCH_COLS = [f"pitch_{i:02d}" for i in range(WINDOW)]
+
+# ---- 군집 (clustering.py) ----
+BASELINE_EPISODE = "episode0"   # 정상 10분 고정 판 -> "평소 행동" 기준선 (군집 학습에는 미사용)
+
+# 특징 가중치: 라벨을 보고 튜닝하지 않고, 논문 근거와 도메인 가정으로 사전에 고정한다.
+#  - pitch 계열: 논문 Table VII에서 사람/휴리스틱 봇 차이가 가장 큰 축 -> 3.0
+#  - 멈춤 비율, 방향 전환: 봇은 쉬지 않고 미세 보정한다는 가정 -> 2.0
+#  - yaw 계열, 속도: 사람 간 개인차가 큰 축 -> 0.5~1.0
+#  - hit: 궤적이 아닌 결과값이고 실력과 섞임 -> 0.5
+FEATURE_WEIGHTS = {
+    "yaw_speed_mean": 0.5, "pitch_speed_mean": 2.0, "speed_max": 0.5,
+    "pre_speed_mean": 0.5, "post_speed_mean": 0.5, "pre_shot_decel": 1.0,
+    "jerk_mean": 1.0, "snap_ratio": 1.0,
+    "yaw_step_corr": 1.0, "pitch_step_corr": 3.0, "yaw_pitch_corr": 1.0,
+    "straightness": 1.0, "yaw_dir_changes": 1.0, "pitch_dir_changes": 3.0,
+    "idle_ratio": 2.0, "hit": 0.5,
+}
+
+K_RANGE = range(2, 9)
+FIT_SAMPLE = 5000               # medoid 탐색용 샘플 수 (거리행렬 5000^2)
+SUSPICIOUS_RATIO = 0.5          # 기준선 비중 / 메인 비중 < 0.5 인 클러스터 = 의심 집단
+SEED = 42
