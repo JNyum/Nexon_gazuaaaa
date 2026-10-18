@@ -8,9 +8,10 @@
 
 reference: 
 - paper
-  - Kanervisto, A., Kinnunen, T., & Hautamäki, V. (2022). Gan-aimbots: Using machine learning for cheating in first person shooters. IEEE Transactions on Games, 15(4), 566-579.
+  Kanervisto, A., Kinnunen, T., & Hautamäki, V. (2022). Gan-aimbots: Using machine learning for cheating in first person shooters. IEEE Transactions on Games, 15(4), 566-579.
 - data
-  - Kanervisto, A., Hautamäki, V., & Kinnunen, T. (2022). Data for "GAN-Aimbots: The Next Generation of Cheating in Multiplayer Video Games". Zenodo. https://doi.org/10.5281/zenodo.6345323
+  Kanervisto, A., Hautamäki, V., & Kinnunen, T. (2022). Data for "GAN-Aimbots: The Next Generation of Cheating in Multiplayer Video Games". Zenodo. https://doi.org/10.5281/zenodo.6345323
+  data collection 3
 - summary 
   - 배경
     기존 치팅 감지의 한계: 기존 안티치트 시스템은 플레이어의 마우스 이동 패턴이나 통계적 행동을 분석하여 에임봇 사용자를 감지
