@@ -110,20 +110,24 @@ def prevalence_table(metrics):
     return [{"cheater_rate": p, "precision": precision_at(tpr, fpr, p)} for p in PREVALENCES]
 
 
-def run():
-    clusters = pd.read_parquet(C.PROCESSED_DIR / "clusters.parquet")
-    games = pd.read_parquet(C.PROCESSED_DIR / "games.parquet")
+def compute(clusters, games, model):
+    """파일 입출력 없이 지표 계산 (대시보드 재군집에서도 사용)."""
     labeled = clusters.merge(games[["game_id", "label", "is_cheat"]], on="game_id")
     main = labeled[labeled.split == "main"]
-
     shot = shot_level(main)
     game, game_scores = game_level(clusters, games)
     shot["prevalence"] = prevalence_table(shot["unsupervised"])
     game["prevalence"] = prevalence_table(game["unsupervised"])
-
-    model = json.load(open(C.PROCESSED_DIR / "cluster_model.json", encoding="utf-8"))
     metrics = {"k": model["k"], "suspicious_clusters": model["suspicious_clusters"],
                "H1_shot_level": shot, "H2_game_level": game}
+    return metrics, game_scores
+
+
+def run():
+    clusters = pd.read_parquet(C.PROCESSED_DIR / "clusters.parquet")
+    games = pd.read_parquet(C.PROCESSED_DIR / "games.parquet")
+    model = json.load(open(C.PROCESSED_DIR / "cluster_model.json", encoding="utf-8"))
+    metrics, game_scores = compute(clusters, games, model)
     with open(C.PROCESSED_DIR / "metrics.json", "w", encoding="utf-8") as f:
         json.dump(metrics, f, ensure_ascii=False, indent=2)
     game_scores.to_parquet(C.PROCESSED_DIR / "game_scores.parquet", index=False)

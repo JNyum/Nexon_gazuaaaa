@@ -44,6 +44,7 @@ Nexon_gazuaaaa/
 │   ├── preprocess.py            # 파이프라인 실행 + 품질 리포트
 │   ├── clustering.py            # K-Medoids 군집 (라벨 미사용) + 의심 집단 판정
 │   └── evaluate.py              # 라벨 조인 후 H1(샷)/H2(경기) 평가
+├── app.py                       # Streamlit 대시보드
 └── requirements.txt
 ```
 
@@ -59,6 +60,7 @@ Nexon_gazuaaaa/
    python -m src.preprocess   # JSON -> games/shots parquet
    python -m src.clustering   # K-Medoids 군집, 의심 집단 판정
    python -m src.evaluate     # 라벨 조인 후 평가 지표 산출
+   streamlit run app.py       # 대시보드
    ```
 
 ## 전처리 결과
@@ -92,3 +94,14 @@ Nexon_gazuaaaa/
 | `cluster_model.json` | K, 가중치, medoid 샷, 클러스터별 기준선 비중, K 탐색 결과 |
 | `metrics.json` | H1/H2 지표, 봇 유형별 결과, ROC, 치터 비율별 precision |
 | `game_scores.parquet` | 경기별 의심 샷 비율, 판정, 검토 우선순위 |
+
+## 대시보드 (`app.py`)
+
+| 탭 | 내용 |
+|---|---|
+| 개요 | H1/H2 핵심 지표, 라벨별 샷·경기 단위 의심 판정률 |
+| 군집 구조 | K 선택(실루엣), 의심 집단 판정 근거(기준선 비중), 클러스터별 라벨 구성, medoid 대표 궤적, 라벨별 평균 pitch 이동량 |
+| 탐지 성능 | 봇 유형별 경기 단위 ROC, 경기별 의심 샷 비율 분포와 임계값, 혼동행렬, 군집-라벨 일치도 |
+| 실서비스 시나리오 | 치터 비율 슬라이더에 따른 precision, 1만 경기 기준 검토 대기열 규모와 검토 효율 |
+| 검토 대기열 | 의심 샷 비율 순 경기 목록(정답 라벨은 토글로만 표시), 경기 타임라인, 의심 샷 2D 조준 경로 |
+| 가중치 실험 | 특징 가중치·K를 바꿔 메모리에서 재군집하고 기본 설정과 지표 비교 (결과 파일은 덮어쓰지 않음) |

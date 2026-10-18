@@ -59,9 +59,11 @@ def assign(X, M):
     return d.argmin(1), d.min(1)
 
 
-def run(k=None, weights=None, sample=C.FIT_SAMPLE, seed=C.SEED):
+def run(k=None, weights=None, sample=C.FIT_SAMPLE, seed=C.SEED, save=True, data=None):
+    """save=False면 파일을 쓰지 않고 (model, clusters) 반환 (대시보드 재군집용)."""
     weights = weights or C.FEATURE_WEIGHTS
-    main, base = load()
+    main, base = data if data is not None else load()
+    main, base = main.copy(), base.copy()
     Xm, Xb = embed(main, base, weights)
 
     rng = np.random.default_rng(seed)
@@ -96,7 +98,6 @@ def run(k=None, weights=None, sample=C.FIT_SAMPLE, seed=C.SEED):
     main["split"], base["split"] = "main", "baseline"
     keep = ["game_id", "frame", "shot_idx", "split", "cluster", "dist_to_medoid", "suspicious"]
     out = pd.concat([main[keep], base[keep]], ignore_index=True)
-    out.to_parquet(C.PROCESSED_DIR / "clusters.parquet", index=False)
 
     model = {
         "k": int(best_k),
@@ -120,9 +121,11 @@ def run(k=None, weights=None, sample=C.FIT_SAMPLE, seed=C.SEED):
             for c in range(best_k)
         ],
     }
-    with open(C.PROCESSED_DIR / "cluster_model.json", "w", encoding="utf-8") as f:
-        json.dump(model, f, ensure_ascii=False, indent=2)
-    return model
+    if save:
+        out.to_parquet(C.PROCESSED_DIR / "clusters.parquet", index=False)
+        with open(C.PROCESSED_DIR / "cluster_model.json", "w", encoding="utf-8") as f:
+            json.dump(model, f, ensure_ascii=False, indent=2)
+    return model, out
 
 
 def main():
@@ -132,7 +135,7 @@ def main():
     ap.add_argument("--sample", type=int, default=C.FIT_SAMPLE)
     ap.add_argument("--seed", type=int, default=C.SEED)
     a = ap.parse_args()
-    m = run(k=a.k, sample=a.sample, seed=a.seed)
+    m, _ = run(k=a.k, sample=a.sample, seed=a.seed)
     log.info("선택된 K=%d, 의심 클러스터=%s", m["k"], m["suspicious_clusters"])
     for c in m["clusters"]:
         log.info("  cluster %d  메인 %.1f%%  기준선 %.1f%%  ratio %.2f %s", c["cluster"],
