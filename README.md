@@ -1,18 +1,28 @@
 # Nexon_gazuaaaa
 넥슨 슈터본부 슈터플랫폼실 데이터 엔지니어 과제 테스트
 
+목표: 에임 이동 궤적만으로 특이 행동 집단을 찾아내고, 이를 운영 검토 대상으로 연결
 
+가설: 
+  - H1: 치팅 샷의 에임 궤적은 정상 샷과 다른 분포를 가지며, 라벨 없이도 별도 집단으로 묶인다.
+    근거: 휴리스틱 에임봇은 수직축 이동의 연속성, 축 간 동시 이동 패턴에서 사람과 뚜렷한 차이를 보임 (Kanervisto et al., 2022)
+    검증: 클러스터 순도, ARI/NMI, 실루엣 점수
 
+  - H2: 샷 단위 군집 결과를 경기 단위로 누적하면 치팅 경기를 판별할 수 있다.
+    근거: 단일 샷 판정은 불안정하지만, 게임 단위로 점수를 모으면 탐지율이 크게 향상됨 (Kanervisto et al., 2022)
+    검증: 플레이어 단위 precision / recall / F1, 실제 치터 비율(1~5%) 조건에서의 precision
 
+사용 데이터:
+  Kanervisto, A., Hautamäki, V., & Kinnunen, T. (2022). Data for "GAN-Aimbots: The Next Generation of Cheating in Multiplayer Video Games". Zenodo. https://doi.org/10.5281/zenodo.6345323
+  data_collection_3
 
+활용 AI:
+  Claude.ai - Pro plan, Co-work
 
 reference: 
-- paper
+- 논문
   Kanervisto, A., Kinnunen, T., & Hautamäki, V. (2022). Gan-aimbots: Using machine learning for cheating in first person shooters. IEEE Transactions on Games, 15(4), 566-579.
-- data
-  Kanervisto, A., Hautamäki, V., & Kinnunen, T. (2022). Data for "GAN-Aimbots: The Next Generation of Cheating in Multiplayer Video Games". Zenodo. https://doi.org/10.5281/zenodo.6345323
-  data collection 3
-- summary 
+- 논문 요약 
   - 배경
     기존 치팅 감지의 한계: 기존 안티치트 시스템은 플레이어의 마우스 이동 패턴이나 통계적 행동을 분석하여 에임봇 사용자를 감지
   - 목적
