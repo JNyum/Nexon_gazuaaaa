@@ -29,3 +29,43 @@ reference:
     머신러닝 기반 생성을 통한 치팅이 비디오 게임 산업에 실질적이고 심각한 위협이 됨
     짧은 구간의 마우스 움직임 분석만으로는 치트를 막기 어려움, 장기적 행동 모니터링이나 다각적 탐지 기법 등이 필요
 
+
+## 프로젝트 구조
+
+```
+Nexon_gazuaaaa/
+├── data/
+│   ├── raw/data_collection_3/   # 원본 JSON 132개 (git 제외)
+│   └── processed/               # 전처리 결과 (git 제외)
+├── src/
+│   ├── config.py                # 경로, 게임 사양, 라벨 매핑 등 상수
+│   ├── loader.py                # JSON 로드, 스키마 검증, 사격 구간 추출
+│   ├── features.py              # 궤적 -> 행동 특징 16개
+│   └── preprocess.py            # 파이프라인 실행 + 품질 리포트
+└── requirements.txt
+```
+
+## 실행 방법
+
+1. 의존성 설치
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. 데이터 준비: [Zenodo](https://doi.org/10.5281/zenodo.6345323)에서 받은 `data_collection_3`의 JSON 파일을 `data/raw/data_collection_3/`에 넣는다.
+3. 전처리
+   ```bash
+   python -m src.preprocess
+   ```
+
+## 전처리 결과
+
+| 파일 | 단위 | 내용 |
+|---|---|---|
+| `games.parquet` | 경기 1개 = 1행 | game_id, hwid, episode, 무작위 구간 여부, label, is_cheat, FPS 숙련도, 샷 수, 명중률 |
+| `shots.parquet` | 샷 1개 = 1행 | game_id, 사격 프레임, 무기, 명중 여부, 원시 궤적(yaw/pitch 각 25프레임), 행동 특징 16개 |
+| `quality_report.json` | - | 스키마 오류 파일, 중복 키, 결측/무한값, 경계에서 버린 샷, 라벨 분포 |
+
+- 사격 탐지: 탄약이 무기별 1발 소모량만큼 줄어든 프레임. 로켓런처·플라즈마건은 제외 (원본 코드와 동일)
+- 궤적 창: 사격 전 0.5초(17프레임) + 사격 후 0.25초(8프레임)
+- 라벨은 `games`에만 두고 `shots`에는 넣지 않는다. 군집은 `shots`만으로 학습하고, 평가할 때 `game_id`로 조인한다.
+- 메인 분석 구간: episode2~5 (라벨이 무작위 순서로 배정, 라벨별 22경기씩 88경기 / 15,084샷). episode0(정상 10분), episode1(light 10분)은 순서가 고정돼 있어 보조 기준선으로만 사용한다.

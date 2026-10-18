@@ -1,0 +1,10 @@
+# 원본/가공 데이터는 용량 때문에 커밋하지 않음 (Zenodo에서 받기)
+data/raw/
+data/processed/
+*.zip
+
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+.DS_Store
