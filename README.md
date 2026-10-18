@@ -16,8 +16,8 @@
   Kanervisto, A., Hautamäki, V., & Kinnunen, T. (2022). Data for "GAN-Aimbots: The Next Generation of Cheating in Multiplayer Video Games". Zenodo. https://doi.org/10.5281/zenodo.6345323
   data_collection_3
 
-활용 AI:
-  Claude.ai - Pro plan, Co-work
+활용 AI - Claude.ai  
+  활용 범위: 목표 및 가설 구체화, 실험 설계 및 코드 작성, 제안서 초안 작성
 
 reference: 
 - 논문
@@ -40,7 +40,7 @@ reference:
     짧은 구간의 마우스 움직임 분석만으로는 치트를 막기 어려움, 장기적 행동 모니터링이나 다각적 탐지 기법 등이 필요
 
 
-## 프로젝트 구조
+## repo 구조
 
 ```
 Nexon_gazuaaaa/
@@ -64,7 +64,8 @@ Nexon_gazuaaaa/
    ```bash
    pip install -r requirements.txt
    ```
-2. 데이터: `data/data_collection_3/`에 포함되어 있음 (출처: [Zenodo](https://doi.org/10.5281/zenodo.6345323))
+2. 사용 데이터: VisDoom의 플레이 데이터, `data/data_collection_3/  
+(출처: [Zenodo](https://doi.org/10.5281/zenodo.6345323))
 3. 파이프라인 실행
    ```bash
    python -m src.preprocess   # JSON -> games/shots parquet

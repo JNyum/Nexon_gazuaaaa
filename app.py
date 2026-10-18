@@ -300,8 +300,8 @@ with tabs[2]:
                       width="stretch")
     c3.markdown("**군집-라벨 일치도 (샷)**")
     c3.dataframe(pd.DataFrame({
-        "값": [H1["ari_label4"], H1["nmi_label4"], H1["oracle_majority_mapping"]["f1"]]},
-        index=["ARI (4라벨)", "NMI (4라벨)", "상한선 F1 (다수결 매핑)"]), width="stretch")
+        "값": [H1["ari_label4"], H1["nmi_label4"]]},
+        index=["ARI (4라벨)", "NMI (4라벨)"]), width="stretch")
 
 # ===========================================================================
 # 4. 실서비스 시나리오
