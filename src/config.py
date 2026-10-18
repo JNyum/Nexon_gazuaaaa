@@ -2,7 +2,7 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-RAW_DIR = ROOT / "data" / "raw" / "data_collection_3"
+RAW_DIR = ROOT / "data" / "data_collection_3"
 PROCESSED_DIR = ROOT / "data" / "processed"
 
 # ---- 게임/녹화 사양 (원본 feature_extraction.py와 동일) ----
